@@ -8,23 +8,24 @@ on:
 jobs:
   track:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 2  # нужно для diff
 
-      - name: Get initial commit hash
-        id: get_initial_commit
-        run: echo "::set-output name=hash::$(git rev-list --max-parents=0 HEAD)"
+      - name: Get initial commit
+        id: get_initial
+        run: echo "initial_commit=$(git rev-list --max-parents=0 HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Get list of changed files
+      - name: Generate changes.txt
         run: |
-          git fetch origin master
-          git diff --name-only ${{ steps.get_initial_commit.outputs.hash }}..HEAD > changes.txt
+          git diff --name-only ${{ steps.get_initial.outputs.initial_commit }}..HEAD > changes.txt
+          cat changes.txt
 
-      - name: Commit changes.txt
-        run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          git add changes.txt
-          git commit -m "Add changes.txt with modified files" || echo "No changes to commit"
-          git push || echo "Nothing to push"
+      - name: Commit changes.txt to repo
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Track changes: auto-update changes.txt"
+          file_pattern: changes.txt
