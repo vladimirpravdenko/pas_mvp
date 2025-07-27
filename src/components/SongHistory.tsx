@@ -212,7 +212,16 @@ export const SongHistory: React.FC = () => {
 
     try {
       const filename = `${(song.title || 'song').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.mp3`;
-      await sunoApi.downloadSong(audioUrl, filename);
+          const response = await fetch(audioUrl);
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    link.click();
+
+    window.URL.revokeObjectURL(blobUrl);
       
       toast({
         title: 'Download Started',
