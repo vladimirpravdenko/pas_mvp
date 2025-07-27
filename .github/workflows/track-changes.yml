@@ -1,0 +1,26 @@
+name: Track Changed Files
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Get list of changed files
+        run: |
+          git fetch origin master
+          git diff --name-only HEAD^ HEAD > changes.txt
+
+      - name: Commit changes.txt
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add changes.txt
+          git commit -m "Add changes.txt with modified files"
+          git push || echo "No changes to commit"
