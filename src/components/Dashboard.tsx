@@ -73,9 +73,9 @@ export const Dashboard: React.FC = () => {
           <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="create"><Plus className="h-4 w-4" />Create</TabsTrigger>
             <TabsTrigger value="history"><History className="h-4 w-4" />History</TabsTrigger>
-            <TabsTrigger value="webhook"><Webhook className="h-4 w-4" />Webhook</TabsTrigger>
-            <TabsTrigger value="payloads"><Eye className="h-4 w-4" />Payloads</TabsTrigger>
-            <TabsTrigger value="mappings"><MapPin className="h-4 w-4" />Mappings</TabsTrigger>
+            {/*<TabsTrigger value="webhook"><Webhook className="h-4 w-4" />Webhook</TabsTrigger> */}
+            {/*<TabsTrigger value="payloads"><Eye className="h-4 w-4" />Payloads</TabsTrigger> */}
+            {/*<TabsTrigger value="mappings"><MapPin className="h-4 w-4" />Mappings</TabsTrigger> */}
             <TabsTrigger value="settings"><Settings className="h-4 w-4" />Settings</TabsTrigger>
           </TabsList>
           
