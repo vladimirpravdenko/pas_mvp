@@ -12,15 +12,19 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Get initial commit hash
+        id: get_initial_commit
+        run: echo "::set-output name=hash::$(git rev-list --max-parents=0 HEAD)"
+
       - name: Get list of changed files
         run: |
           git fetch origin master
-          git diff --name-only HEAD^ HEAD > changes.txt
+          git diff --name-only ${{ steps.get_initial_commit.outputs.hash }}..HEAD > changes.txt
 
       - name: Commit changes.txt
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
           git add changes.txt
-          git commit -m "Add changes.txt with modified files"
-          git push || echo "No changes to commit"
+          git commit -m "Add changes.txt with modified files" || echo "No changes to commit"
+          git push || echo "Nothing to push"
