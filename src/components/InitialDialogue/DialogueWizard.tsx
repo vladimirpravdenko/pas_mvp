@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { buildSemanticData } from '@/lib/transformDialogue';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useAppContext } from '@/contexts/AppContext';
@@ -16,7 +17,7 @@ interface Template {
 const DialogueWizard: React.FC = () => {
   const { user, preferredLanguage, refreshInitialDialogueResponses } = useAppContext();
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [current, setCurrent] = useState(0);
   const [summary, setSummary] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -45,7 +46,7 @@ const DialogueWizard: React.FC = () => {
     loadTemplates();
   }, [preferredLanguage]);
 
-  const handleChange = (name: string, value: any) => {
+  const handleChange = (name: string, value: unknown) => {
     setAnswers(prev => ({ ...prev, [name]: value }));
   };
 
@@ -79,12 +80,18 @@ const DialogueWizard: React.FC = () => {
         return;
       }
 
+      // Build a structured JSON object from the user's answers.
+      // This feeds the prompt builder so the AI can generate personalised lyrics and audio.
+      const semanticData = buildSemanticData(templates, answers);
+
       const text = templates
         .map((t) =>
-          `${t.question}: ${Array.isArray(answers[t.field_name]) ? (answers[t.field_name] as any[]).join(', ') : answers[t.field_name]}`,
+          `${t.question}: ${Array.isArray(answers[t.field_name]) ? (answers[t.field_name] as unknown[]).join(', ') : answers[t.field_name]}`,
         )
         .join('\n');
+
       setSummary(text);
+      console.debug('Prompt data', semanticData);
       await refreshInitialDialogueResponses();
     } catch (err) {
       console.error('Failed to save responses', err);
