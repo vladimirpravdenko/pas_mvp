@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -55,7 +56,10 @@ export const Dashboard: React.FC = () => {
                 )}
               </div>
               
-              <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center gap-3 text-sm text-gray-600">
+                <Link to="/profile/preferences" className="underline">
+                  Preferences
+                </Link>
                 <span>{user.email}</span>
                 <Button variant="ghost" size="sm" onClick={logout}>
                   <LogOut className="h-4 w-4" />
