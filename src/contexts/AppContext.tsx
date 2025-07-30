@@ -77,30 +77,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const fetchIsAdmin = async (id: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', id)
+        .single();
+      if (error) {
+        console.error('is_admin fetch error', error);
+        return false;
+      }
+      return data?.is_admin ?? false;
+    } catch (err) {
+      console.error('is_admin fetch error', err);
+      return false;
+    }
+  };
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const loadSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setSupabaseUser(session.user);
+        const isAdmin = await fetchIsAdmin(session.user.id);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
           songsToday: 0,
-          isAdmin: !!session.user.user_metadata?.is_admin
+          isAdmin
         });
         checkInitialDialogueResponses(session.user.id);
       }
-    });
+    };
+    loadSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setSupabaseUser(session.user);
+        const isAdmin = await fetchIsAdmin(session.user.id);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
           songsToday: 0,
-          isAdmin: !!session.user.user_metadata?.is_admin
+          isAdmin
         });
         checkInitialDialogueResponses(session.user.id);
       } else {
@@ -120,12 +142,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
+        const isAdmin = await fetchIsAdmin(data.user.id);
         setUser({
           id: data.user.id,
           email: data.user.email || '',
           plan: 'free',
           songsToday: 0,
-          isAdmin: !!data.user.user_metadata?.is_admin
+          isAdmin
         });
         checkInitialDialogueResponses(data.user.id);
         return true;
@@ -142,12 +165,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
+        const isAdmin = await fetchIsAdmin(data.user.id);
         setUser({
           id: data.user.id,
           email: data.user.email || '',
           plan: 'free',
           songsToday: 0,
-          isAdmin: !!data.user.user_metadata?.is_admin
+          isAdmin
         });
         checkInitialDialogueResponses(data.user.id);
         return true;
