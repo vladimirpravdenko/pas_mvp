@@ -15,6 +15,13 @@ interface StoredAudio {
   };
 }
 
+interface MinimalSongData {
+  id: string;
+  title: string;
+  tags?: string;
+  prompt?: string;
+}
+
 class AudioStorageService {
   private dbName = 'MusicMotivateDB';
   private dbVersion = 1;
@@ -42,7 +49,7 @@ class AudioStorageService {
     });
   }
 
-  async downloadAndStore(audioUrl: string, songData: any): Promise<StoredAudio> {
+  async downloadAndStore(audioUrl: string, songData: MinimalSongData): Promise<StoredAudio> {
     try {
       // Use proxy route to bypass CORS
       const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(audioUrl)}`;
@@ -142,4 +149,4 @@ class AudioStorageService {
 
 export const audioStorage = new AudioStorageService();
 export const downloadAndStore = audioStorage.downloadAndStore.bind(audioStorage);
-export type { StoredAudio };
+export type { StoredAudio, MinimalSongData };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { DialogueWizard } from '@/components/DialogueWizard';
+import DialogueWizard from '@/components/InitialDialogue/DialogueWizard';
 import { initial_dialogue_templates, DialogueTemplate } from '@/data/dialogueTemplates';
 import { AppProvider, useAppContext } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';

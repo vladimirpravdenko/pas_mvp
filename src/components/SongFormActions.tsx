@@ -1,4 +1,5 @@
 import React from 'react';
+import type { SongFormData } from './SongForm';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { Music, Sparkles, Loader2 } from 'lucide-react';
@@ -8,7 +9,7 @@ import { webhookService } from '@/services/webhookService';
 import { useAppContext } from '@/contexts/AppContext';
 
 interface SongFormActionsProps {
-  formData: any;
+  formData: SongFormData;
   loading: boolean;
   generatingAudio: boolean;
   generatedLyrics: string;

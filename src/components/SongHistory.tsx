@@ -45,9 +45,10 @@ export const SongHistory: React.FC = () => {
       setAllSongs(data || []);
     } catch (error) {
       console.error('Failed to load songs:', error);
-      const userContextSongs = contextSongs.filter(song => 
-        song.id && (song as any).user_id === user.id
-      ) as Song[];
+      const userContextSongs = contextSongs.filter(song => {
+        const withUser = song as Song & { user_id?: string };
+        return withUser.id && withUser.user_id === user.id;
+      }) as Song[];
       setAllSongs(userContextSongs);
     }
   };
@@ -173,7 +174,7 @@ export const SongHistory: React.FC = () => {
     setDownloadingIds(prev => new Set(prev.add(songId)));
 
     try {
-      const stored = await audioStorage.downloadAndStore(song.audio_url, song as any);
+      const stored = await audioStorage.downloadAndStore(song.audio_url, song);
       setStoredAudios(prev => [...prev.filter(s => s.id !== songId), stored]);
       
       toast({

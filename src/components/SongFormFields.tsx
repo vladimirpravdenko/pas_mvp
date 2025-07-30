@@ -1,4 +1,5 @@
 import React from 'react';
+import type { SongFormData } from './SongForm';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -6,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface SongFormFieldsProps {
-  formData: any;
-  setFormData: (updater: (prev: any) => any) => void;
+  formData: SongFormData;
+  setFormData: React.Dispatch<React.SetStateAction<SongFormData>>;
   generatedLyrics: string;
   setGeneratedLyrics: (lyrics: string) => void;
   musicStyle: string;

@@ -8,7 +8,7 @@ import PromptPreview from '@/components/PromptPreview';
 
 const PreferencesInner: React.FC = () => {
   const { user } = useAppContext();
-  const [responses, setResponses] = useState<any>({});
+  const [responses, setResponses] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const PreferencesInner: React.FC = () => {
   }, [user]);
 
   const saveField = async (key: string, value: string) => {
-    setResponses((prev: any) => ({ ...prev, [key]: value }));
+    setResponses((prev) => ({ ...prev, [key]: value }));
     if (!user) return;
     await supabase
       .from('user_initial_dialogue_responses')
