@@ -11,7 +11,7 @@ interface WebhookLog {
   method: string;
   headers: Record<string, string>;
   rawBody: string;
-  parsedPayload?: any;
+  parsedPayload?: unknown;
   processed?: number;
   error?: string;
 }

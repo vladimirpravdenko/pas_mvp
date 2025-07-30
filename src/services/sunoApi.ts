@@ -76,7 +76,7 @@ class SunoApiService {
       throw new Error('User must be authenticated to generate songs');
     }
     
-    const body: any = {
+    const body: Record<string, unknown> = {
       prompt: request.prompt,
       style: request.style || '',
       title: request.title ? `${request.title} [taskId: ${taskId}]` : `[taskId: ${taskId}]`,
@@ -148,7 +148,7 @@ class SunoApiService {
           }
         }
         
-        return songs.map((song: any) => ({
+        return songs.map((song) => ({
           id: song.suno_id || song.id,
           title: song.title || 'Untitled',
           image_url: song.image_url || '',

@@ -11,7 +11,7 @@ interface WebhookCheckResult {
   responseTime?: number;
   error?: string;
   functionId?: string;
-  response?: any;
+  response?: unknown;
 }
 
 export const WebhookStatusChecker: React.FC = () => {

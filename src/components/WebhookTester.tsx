@@ -11,7 +11,7 @@ import { Webhook, Send, CheckCircle, AlertCircle } from 'lucide-react';
 interface TestResult {
   success: boolean;
   status: number;
-  data?: any;
+  data?: unknown;
   error?: string;
   responseText?: string;
 }

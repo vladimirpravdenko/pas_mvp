@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface PromptPreviewProps {
   prompt?: string;
-  responses?: Record<string, any>;
+  responses?: Record<string, unknown>;
 }
 
 const PromptPreview: React.FC<PromptPreviewProps> = ({ prompt, responses }) => {
