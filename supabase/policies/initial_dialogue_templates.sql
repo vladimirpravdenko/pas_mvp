@@ -6,3 +6,8 @@ CREATE POLICY "Admins can modify dialogue templates"
   FOR ALL
   USING ((auth.jwt() ->> 'role') = 'admin')
   WITH CHECK ((auth.jwt() ->> 'role') = 'admin');
+
+CREATE POLICY "Authenticated users read active templates"
+  ON initial_dialogue_templates
+  FOR SELECT
+  USING (auth.uid() IS NOT NULL AND is_active);
