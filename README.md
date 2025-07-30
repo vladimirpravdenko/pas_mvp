@@ -1,13 +1,11 @@
 # React + TypeScript + Vite
 
-Hello, world! This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.  
-
+Hello, world! This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 ## Database Migrations
 
-Apply row level security policies with:
+SQL files live in `supabase/migrations`. Apply them with the [Supabase CLI](https://supabase.com/docs/guides/cli):
 
 ```bash
-psql $DATABASE_URL -f supabase/policies/initial_dialogue_templates.sql
-psql $DATABASE_URL -f supabase/policies/user_initial_dialogue_responses.sql
-```
+supabase link --project-ref <project-id>
+supabase db push

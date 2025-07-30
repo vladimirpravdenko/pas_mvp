@@ -7,6 +7,7 @@ interface User {
   email: string;
   plan: 'free' | 'paid';
   songsToday: number;
+  isAdmin: boolean;
 }
 
 interface Song {
@@ -27,6 +28,8 @@ interface AppContextType {
   user: User | null;
   songs: Song[];
   isAuthenticated: boolean;
+  hasInitialDialogueResponses: boolean;
+  refreshInitialDialogueResponses: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
@@ -48,6 +51,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [hasInitialDialogueResponses, setHasInitialDialogueResponses] = useState<boolean>(false);
+
+  const checkInitialDialogueResponses = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_initial_dialogue_responses')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+      if (error) throw error;
+      setHasInitialDialogueResponses(!!data && data.length > 0);
+    } catch (err) {
+      console.error('Failed to load initial dialogue responses:', err);
+      setHasInitialDialogueResponses(false);
+    }
+  };
+
+  const refreshInitialDialogueResponses = async () => {
+    if (supabaseUser) {
+      await checkInitialDialogueResponses(supabaseUser.id);
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -57,8 +82,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin: !!session.user.user_metadata?.is_admin
         });
+        checkInitialDialogueResponses(session.user.id);
       }
     });
 
@@ -69,12 +96,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin: !!session.user.user_metadata?.is_admin
         });
+        checkInitialDialogueResponses(session.user.id);
       } else {
         setSupabaseUser(null);
         setUser(null);
         setSongs([]);
+        setHasInitialDialogueResponses(false);
       }
     });
 
@@ -87,11 +117,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          plan: 'free',
+          songsToday: 0,
+          isAdmin: !!data.user.user_metadata?.is_admin
+        });
+        checkInitialDialogueResponses(data.user.id);
         return true;
       }
       return false;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   };
 
   const register = async (email: string, password: string): Promise<boolean> => {
@@ -100,11 +139,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          plan: 'free',
+          songsToday: 0,
+          isAdmin: !!data.user.user_metadata?.is_admin
+        });
+        checkInitialDialogueResponses(data.user.id);
         return true;
       }
       return false;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   };
 
   const logout = async () => {
@@ -113,6 +161,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSupabaseUser(null);
       setUser(null);
       setSongs([]);
+      setHasInitialDialogueResponses(false);
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -139,7 +188,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      user, songs, isAuthenticated: !!supabaseUser, login, register, logout, addSong, canGenerateSong
+      user,
+      songs,
+      isAuthenticated: !!supabaseUser,
+      hasInitialDialogueResponses,
+      refreshInitialDialogueResponses,
+      login,
+      register,
+      logout,
+      addSong,
+      canGenerateSong
     }}>
       {children}
     </AppContext.Provider>
