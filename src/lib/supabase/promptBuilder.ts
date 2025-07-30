@@ -1,7 +1,9 @@
 import { supabase } from '@/lib/supabase';
 
 export interface DialogueResponse {
-  question: string;
+  initial_dialogue_templates: {
+    label: string;
+  };
   response: string;
 }
 
@@ -13,7 +15,7 @@ export interface DialogueResponse {
 export async function generateSongPrompt(userId: string): Promise<string> {
   const { data, error } = await supabase
     .from('user_initial_dialogue_responses')
-    .select('question, response')
+    .select('initial_dialogue_templates.label, response')
     .eq('user_id', userId)
     .order('created_at', { ascending: true });
 
@@ -27,7 +29,9 @@ export async function generateSongPrompt(userId: string): Promise<string> {
   }
 
   // Assemble the prompt using the collected responses.
-  const lines = data.map((entry) => `${entry.question.trim()}: ${entry.response.trim()}`);
+  const lines = data.map(
+    (entry) => `${entry.initial_dialogue_templates.label.trim()}: ${String(entry.response).trim()}`,
+  );
 
   return `Use the following user preferences to craft a personalised song.\n${lines.join('\n')}`;
 }
