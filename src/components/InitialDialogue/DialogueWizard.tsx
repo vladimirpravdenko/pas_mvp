@@ -114,10 +114,27 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
         return;
       }
 
+      // Check that all required fields have been answered
+      for (const t of templates) {
+        const value = answers[t.field_name];
+        const missing =
+          value === null ||
+          value === undefined ||
+          (typeof value === 'string' && value.trim() === '') ||
+          (Array.isArray(value) && value.length === 0);
+        if (missing) {
+          setError(
+            `Please provide an answer for "${t.question || t.label || t.field_name}".`
+          );
+          setSaving(false);
+          return;
+        }
+      }
+
       const payload = templates.map((t) => ({
         user_id: user.id,
         template_id: t.id,
-        response: answers[t.field_name] ?? null,
+        response: answers[t.field_name],
       }));
 
       const { error } = await supabase
