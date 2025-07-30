@@ -7,6 +7,7 @@ interface User {
   email: string;
   plan: 'free' | 'paid';
   songsToday: number;
+  isAdmin: boolean;
 }
 
 interface Song {
@@ -57,7 +58,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin: !!session.user.user_metadata?.is_admin
         });
       }
     });
@@ -69,7 +71,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin: !!session.user.user_metadata?.is_admin
         });
       } else {
         setSupabaseUser(null);
@@ -87,7 +90,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          plan: 'free',
+          songsToday: 0,
+          isAdmin: !!data.user.user_metadata?.is_admin
+        });
         return true;
       }
       return false;
@@ -100,7 +109,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          plan: 'free',
+          songsToday: 0,
+          isAdmin: !!data.user.user_metadata?.is_admin
+        });
         return true;
       }
       return false;
