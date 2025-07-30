@@ -5,13 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useAppContext } from '@/contexts/AppContext';
 
+interface Option {
+  label: string;
+  value: string;
+}
+
 interface Template {
   id: number | string;
   field_name: string;
   question?: string;
   label?: string;
   field_type?: string;
-  options?: string[] | null;
+  options?: Option[];
   order?: number;
 }
 
@@ -50,9 +55,40 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
         console.error('Failed to load templates', error);
         setError('Failed to load templates');
         setTemplates([]);
-      } else {
-        setTemplates(data || []);
+        setLoading(false);
+        return;
       }
+
+      const templatesData = data || [];
+      const optionTemplateIds = templatesData
+        .filter((t) => t.field_type === 'select' || t.field_type === 'slider')
+        .map((t) => t.id);
+
+      const optionsMap: Record<string | number, Option[]> = {};
+      if (optionTemplateIds.length) {
+        const { data: opts, error: optsError } = await supabase
+          .from('initial_dialogue_options')
+          .select('*')
+          .in('template_id', optionTemplateIds)
+          .order('order');
+
+        if (optsError) {
+          console.error('Failed to load dialogue options', optsError);
+        } else if (opts) {
+          for (const opt of opts) {
+            const key = opt.template_id as string | number;
+            if (!optionsMap[key]) optionsMap[key] = [];
+            optionsMap[key].push({ label: opt.label, value: opt.value });
+          }
+        }
+      }
+
+      const templatesWithOptions = templatesData.map((t) => ({
+        ...t,
+        options: optionsMap[t.id] || undefined,
+      }));
+
+      setTemplates(templatesWithOptions);
       setLoading(false);
     };
 
@@ -165,7 +201,7 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
           >
             <option value="">Select...</option>
             {template.options?.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
         );
@@ -173,21 +209,21 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
         return (
           <div className="space-y-1">
             {template.options?.map(opt => (
-              <label key={opt} className="flex items-center gap-2">
+              <label key={opt.value} className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  checked={Array.isArray(value) && value.includes(opt)}
+                  checked={Array.isArray(value) && value.includes(opt.value)}
                   onChange={e => {
                     let vals: string[] = Array.isArray(value) ? [...value] : [];
                     if (e.target.checked) {
-                      vals.push(opt);
+                      vals.push(opt.value);
                     } else {
-                      vals = vals.filter(v => v !== opt);
+                      vals = vals.filter(v => v !== opt.value);
                     }
                     handleChange(template.field_name, vals);
                   }}
                 />
-                <span>{opt}</span>
+                <span>{opt.label}</span>
               </label>
             ))}
           </div>
