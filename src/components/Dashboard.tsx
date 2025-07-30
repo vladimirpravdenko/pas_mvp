@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -39,28 +40,19 @@ export const Dashboard: React.FC = () => {
               </h1>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Badge variant={user.plan === 'paid' ? 'default' : 'secondary'}>
-                  {user.plan === 'paid' ? (
-                    <><Crown className="h-3 w-3 mr-1" />Premium</>
-                  ) : (
-                    'Free Plan'
-                  )}
-                </Badge>
-                {user.plan === 'free' && (
-                  <span className="text-sm text-gray-600">
-                    {3 - user.songsToday}/3 songs today
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>{user.email}</span>
-                <Button variant="ghost" size="sm" onClick={logout}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </div>
+            <div className="flex items-center gap-3 text-sm text-gray-600">
+              <Link to="/profile/preferences" className="underline text-indigo-600">
+                Preferences
+              </Link>
+              {user.isAdmin && (
+                <Link to="/admin/dialogues" className="underline text-indigo-600">
+                  Admin
+                </Link>
+              )}
+              <span>{user.email}</span>
+              <Button variant="ghost" size="sm" onClick={logout}>
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -73,23 +65,31 @@ export const Dashboard: React.FC = () => {
           <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="create"><Plus className="h-4 w-4" />Create</TabsTrigger>
             <TabsTrigger value="history"><History className="h-4 w-4" />History</TabsTrigger>
-            {/*<TabsTrigger value="webhook"><Webhook className="h-4 w-4" />Webhook</TabsTrigger> */}
-            {/*<TabsTrigger value="payloads"><Eye className="h-4 w-4" />Payloads</TabsTrigger> */}
-            {/*<TabsTrigger value="mappings"><MapPin className="h-4 w-4" />Mappings</TabsTrigger> */}
+            {user.isAdmin && (
+              <>
+                <TabsTrigger value="webhook"><Webhook className="h-4 w-4" />Webhook</TabsTrigger>
+                <TabsTrigger value="payloads"><Eye className="h-4 w-4" />Payloads</TabsTrigger>
+                <TabsTrigger value="mappings"><MapPin className="h-4 w-4" />Mappings</TabsTrigger>
+              </>
+            )}
             <TabsTrigger value="settings"><Settings className="h-4 w-4" />Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="create"><SongForm /></TabsContent>
           <TabsContent value="history"><SongHistory /></TabsContent>
-          <TabsContent value="webhook">
-            <div className="space-y-6">
-              <WebhookIntegrationTester />
-              <WebhookStatusChecker />
-              <WebhookTester />
-            </div>
-          </TabsContent>
-          <TabsContent value="payloads"><WebhookPayloadViewer /></TabsContent>
-          <TabsContent value="mappings"><TaskMappingViewer /></TabsContent>
+          {user.isAdmin && (
+            <>
+              <TabsContent value="webhook">
+                <div className="space-y-6">
+                  <WebhookIntegrationTester />
+                  <WebhookStatusChecker />
+                  <WebhookTester />
+                </div>
+              </TabsContent>
+              <TabsContent value="payloads"><WebhookPayloadViewer /></TabsContent>
+              <TabsContent value="mappings"><TaskMappingViewer /></TabsContent>
+            </>
+          )}
           <TabsContent value="settings"><CredentialsSettings /></TabsContent>
         </Tabs>
       </main>

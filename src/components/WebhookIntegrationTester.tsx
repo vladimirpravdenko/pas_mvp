@@ -11,14 +11,14 @@ interface TestResult {
   step: string;
   status: 'pending' | 'success' | 'error';
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 export const WebhookIntegrationTester: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<TestResult[]>([]);
 
-  const updateResult = (step: string, status: TestResult['status'], message: string, data?: any) => {
+  const updateResult = (step: string, status: TestResult['status'], message: string, data?: unknown) => {
     setResults(prev => {
       const existing = prev.find(r => r.step === step);
       if (existing) {

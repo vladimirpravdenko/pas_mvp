@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // In-memory storage for webhook data
-const webhookData = new Map<string, any>();
+const webhookData = new Map<string, unknown>();
 
-export function setWebhookData(id: string, data: any) {
+export function setWebhookData(id: string, data: unknown) {
   webhookData.set(id, data);
 }
 

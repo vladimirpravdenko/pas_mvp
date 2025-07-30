@@ -7,7 +7,7 @@ import { SongFormFields } from '@/components/SongFormFields';
 import { SongFormActions } from '@/components/SongFormActions';
 import { WebhookStatus } from '@/components/WebhookStatus';
 
-interface SongFormData {
+export interface SongFormData {
   mood: string;
   energyLevel: string;
   genre: string;

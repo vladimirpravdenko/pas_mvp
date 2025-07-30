@@ -7,6 +7,7 @@ interface User {
   email: string;
   plan: 'free' | 'paid';
   songsToday: number;
+  isAdmin: boolean;
 }
 
 interface Song {
@@ -27,11 +28,15 @@ interface AppContextType {
   user: User | null;
   songs: Song[];
   isAuthenticated: boolean;
+  hasInitialDialogueResponses: boolean;
+  refreshInitialDialogueResponses: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   addSong: (song: Omit<Song, 'createdAt'>) => void;
   canGenerateSong: () => boolean;
+  preferredLanguage: string;
+  setPreferredLanguage: (lang: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -48,33 +53,83 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [preferredLanguage, setPreferredLanguage] = useState('en');
+  const [hasInitialDialogueResponses, setHasInitialDialogueResponses] = useState<boolean>(false);
+
+  const checkInitialDialogueResponses = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_initial_dialogue_responses')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+      if (error) throw error;
+      setHasInitialDialogueResponses(!!data && data.length > 0);
+    } catch (err) {
+      console.error('Failed to load initial dialogue responses:', err);
+      setHasInitialDialogueResponses(false);
+    }
+  };
+
+  const refreshInitialDialogueResponses = async () => {
+    if (supabaseUser) {
+      await checkInitialDialogueResponses(supabaseUser.id);
+    }
+  };
+
+  const fetchIsAdmin = async (id: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', id)
+        .single();
+      if (error) {
+        console.error('is_admin fetch error', error);
+        return false;
+      }
+      return data?.is_admin ?? false;
+    } catch (err) {
+      console.error('is_admin fetch error', err);
+      return false;
+    }
+  };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const loadSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setSupabaseUser(session.user);
+        const isAdmin = await fetchIsAdmin(session.user.id);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin
         });
+        checkInitialDialogueResponses(session.user.id);
       }
-    });
+    };
+    loadSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setSupabaseUser(session.user);
+        const isAdmin = await fetchIsAdmin(session.user.id);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin
         });
+        checkInitialDialogueResponses(session.user.id);
       } else {
         setSupabaseUser(null);
         setUser(null);
         setSongs([]);
+        setHasInitialDialogueResponses(false);
       }
     });
 
@@ -87,11 +142,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        const isAdmin = await fetchIsAdmin(data.user.id);
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          plan: 'free',
+          songsToday: 0,
+          isAdmin
+        });
+        checkInitialDialogueResponses(data.user.id);
         return true;
       }
       return false;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   };
 
   const register = async (email: string, password: string): Promise<boolean> => {
@@ -100,11 +165,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        const isAdmin = await fetchIsAdmin(data.user.id);
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          plan: 'free',
+          songsToday: 0,
+          isAdmin
+        });
+        checkInitialDialogueResponses(data.user.id);
         return true;
       }
       return false;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   };
 
   const logout = async () => {
@@ -113,6 +188,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSupabaseUser(null);
       setUser(null);
       setSongs([]);
+      setHasInitialDialogueResponses(false);
     } catch (error) {
       console.error('Logout error:', error);
     }
@@ -139,7 +215,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      user, songs, isAuthenticated: !!supabaseUser, login, register, logout, addSong, canGenerateSong
+      user,
+      songs,
+      isAuthenticated: !!supabaseUser,
+      hasInitialDialogueResponses,
+      refreshInitialDialogueResponses,
+      login,
+      register,
+      logout,
+      addSong,
+      canGenerateSong,
+      preferredLanguage,
+      setPreferredLanguage
     }}>
       {children}
     </AppContext.Provider>
