@@ -6,17 +6,21 @@ import { Progress } from '@/components/ui/progress';
 import { useAppContext } from '@/contexts/AppContext';
 
 interface Template {
-  id: number;
+  id: number | string;
   field_name: string;
-  question: string;
-  field_type: string;
+  question?: string;
+  label?: string;
+  field_type?: string;
   options?: string[] | null;
-  order: number;
+  order?: number;
 }
 
-const DialogueWizard: React.FC = () => {
+interface DialogueWizardProps {
+  templates?: Template[];
+}
+const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTemplates }) => {
   const { user, preferredLanguage, refreshInitialDialogueResponses } = useAppContext();
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<Template[]>(initialTemplates || []);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [current, setCurrent] = useState(0);
   const [summary, setSummary] = useState<string | null>(null);
@@ -25,6 +29,13 @@ const DialogueWizard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialTemplates && initialTemplates.length) {
+      setTemplates(initialTemplates);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     const loadTemplates = async () => {
       setLoading(true);
       setError(null);
@@ -34,6 +45,7 @@ const DialogueWizard: React.FC = () => {
         .eq('is_active', true)
         .eq('language', preferredLanguage || 'en')
         .order('order');
+
       if (error) {
         console.error('Failed to load templates', error);
         setError('Failed to load templates');
@@ -43,8 +55,9 @@ const DialogueWizard: React.FC = () => {
       }
       setLoading(false);
     };
+
     loadTemplates();
-  }, [preferredLanguage]);
+  }, [initialTemplates, preferredLanguage]);
 
   const handleChange = (name: string, value: unknown) => {
     setAnswers(prev => ({ ...prev, [name]: value }));
@@ -85,9 +98,13 @@ const DialogueWizard: React.FC = () => {
       const semanticData = buildSemanticData(templates, answers);
 
       const text = templates
-        .map((t) =>
-          `${t.question}: ${Array.isArray(answers[t.field_name]) ? (answers[t.field_name] as unknown[]).join(', ') : answers[t.field_name]}`,
-        )
+        .map((t) => {
+          const label = t.question || t.label || t.field_name;
+          const val = Array.isArray(answers[t.field_name])
+            ? (answers[t.field_name] as unknown[]).join(', ')
+            : answers[t.field_name];
+          return `${label}: ${val}`;
+        })
         .join('\n');
 
       setSummary(text);
@@ -125,10 +142,11 @@ const DialogueWizard: React.FC = () => {
   }
 
   const template = templates[current];
-  const value = answers[template.field_name] ?? (template.field_type === 'multiselect' ? [] : '');
+  const fieldType = template.field_type || 'text';
+  const value = answers[template.field_name] ?? (fieldType === 'multiselect' ? [] : '');
 
   const renderField = () => {
-    switch (template.field_type) {
+    switch (fieldType) {
       case 'textarea':
       case 'paragraph':
         return (
@@ -215,7 +233,7 @@ const DialogueWizard: React.FC = () => {
     <div className="p-4 space-y-4 max-w-xl mx-auto">
       <Progress value={progressValue} />
       <div className="space-y-2">
-        <h2 className="text-lg font-semibold">{template.question}</h2>
+        <h2 className="text-lg font-semibold">{template.question || template.label}</h2>
         {renderField()}
       </div>
       <div className="flex justify-between">
