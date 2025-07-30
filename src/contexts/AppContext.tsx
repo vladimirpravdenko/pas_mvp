@@ -7,6 +7,7 @@ interface User {
   email: string;
   plan: 'free' | 'paid';
   songsToday: number;
+  isAdmin: boolean;
 }
 
 interface Song {
@@ -81,7 +82,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin: !!session.user.user_metadata?.is_admin
         });
         checkInitialDialogueResponses(session.user.id);
       }
@@ -94,7 +96,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin: !!session.user.user_metadata?.is_admin
         });
         checkInitialDialogueResponses(session.user.id);
       } else {
@@ -114,12 +117,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          plan: 'free',
+          songsToday: 0,
+          isAdmin: !!data.user.user_metadata?.is_admin
+        });
         checkInitialDialogueResponses(data.user.id);
         return true;
       }
       return false;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   };
 
   const register = async (email: string, password: string): Promise<boolean> => {
@@ -128,12 +139,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        setUser({
+          id: data.user.id,
+          email: data.user.email || '',
+          plan: 'free',
+          songsToday: 0,
+          isAdmin: !!data.user.user_metadata?.is_admin
+        });
         checkInitialDialogueResponses(data.user.id);
         return true;
       }
       return false;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   };
 
   const logout = async () => {
