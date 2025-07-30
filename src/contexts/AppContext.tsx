@@ -32,6 +32,8 @@ interface AppContextType {
   logout: () => void;
   addSong: (song: Omit<Song, 'createdAt'>) => void;
   canGenerateSong: () => boolean;
+  preferredLanguage: string;
+  setPreferredLanguage: (lang: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -48,6 +50,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [preferredLanguage, setPreferredLanguage] = useState('en');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -139,7 +142,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      user, songs, isAuthenticated: !!supabaseUser, login, register, logout, addSong, canGenerateSong
+      user,
+      songs,
+      isAuthenticated: !!supabaseUser,
+      login,
+      register,
+      logout,
+      addSong,
+      canGenerateSong,
+      preferredLanguage,
+      setPreferredLanguage
     }}>
       {children}
     </AppContext.Provider>
