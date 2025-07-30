@@ -35,6 +35,8 @@ interface AppContextType {
   logout: () => void;
   addSong: (song: Omit<Song, 'createdAt'>) => void;
   canGenerateSong: () => boolean;
+  preferredLanguage: string;
+  setPreferredLanguage: (lang: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -51,6 +53,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [preferredLanguage, setPreferredLanguage] = useState('en');
   const [hasInitialDialogueResponses, setHasInitialDialogueResponses] = useState<boolean>(false);
 
   const checkInitialDialogueResponses = async (userId: string) => {
@@ -197,7 +200,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       register,
       logout,
       addSong,
-      canGenerateSong
+      canGenerateSong,
+      preferredLanguage,
+      setPreferredLanguage
     }}>
       {children}
     </AppContext.Provider>
