@@ -14,7 +14,7 @@ interface Template {
 }
 
 const DialogueWizard: React.FC = () => {
-  const { preferredLanguage } = useAppContext();
+  const { user, preferredLanguage, refreshInitialDialogueResponses } = useAppContext();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [current, setCurrent] = useState(0);
@@ -51,28 +51,46 @@ const DialogueWizard: React.FC = () => {
 
   const handleNext = async () => {
     if (current < templates.length - 1) {
-      setCurrent(c => c + 1);
-    } else {
-      setSaving(true);
-      try {
-        const payload = templates.map(t => ({
-          template_id: t.id,
-          value: answers[t.field_name] ?? null,
-        }));
-        const { error } = await supabase
-          .from('user_initial_dialogue_responses')
-          .insert(payload);
-        if (error) {
-          console.error('Failed to save responses', error);
-        } else {
-          const text = templates
-            .map(t => `${t.question}: ${Array.isArray(answers[t.field_name]) ? (answers[t.field_name] as any[]).join(', ') : answers[t.field_name]}`)
-            .join('\n');
-          setSummary(text);
-        }
-      } finally {
-        setSaving(false);
+      setCurrent((c) => c + 1);
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    try {
+      if (!user) {
+        setError('User not found');
+        return;
       }
+
+      const payload = templates.map((t) => ({
+        user_id: user.id,
+        template_id: t.id,
+        response: answers[t.field_name] ?? null,
+      }));
+
+      const { error } = await supabase
+        .from('user_initial_dialogue_responses')
+        .insert(payload);
+
+      if (error) {
+        console.error('Failed to save responses', error);
+        setError('Failed to save responses');
+        return;
+      }
+
+      const text = templates
+        .map((t) =>
+          `${t.question}: ${Array.isArray(answers[t.field_name]) ? (answers[t.field_name] as any[]).join(', ') : answers[t.field_name]}`,
+        )
+        .join('\n');
+      setSummary(text);
+      await refreshInitialDialogueResponses();
+    } catch (err) {
+      console.error('Failed to save responses', err);
+      setError('Failed to save responses');
+    } finally {
+      setSaving(false);
     }
   };
 
