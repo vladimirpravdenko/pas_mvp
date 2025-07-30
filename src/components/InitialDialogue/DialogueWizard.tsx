@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { buildSemanticData } from '@/lib/transformDialogue';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
 import { useAppContext } from '@/contexts/AppContext';
 
 interface Option {
@@ -179,7 +180,9 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
 
   const template = templates[current];
   const fieldType = template.field_type || 'text';
-  const value = answers[template.field_name] ?? (fieldType === 'multiselect' ? [] : '');
+  const value =
+    answers[template.field_name] ??
+    (fieldType === 'multiselect' ? [] : fieldType === 'slider' ? undefined : '');
 
   const renderField = () => {
     switch (fieldType) {
@@ -196,15 +199,36 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
         return (
           <select
             className="w-full border rounded p-2"
-            value={value}
+            value={value ?? ''}
             onChange={e => handleChange(template.field_name, e.target.value)}
           >
             <option value="">Select...</option>
-            {template.options?.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {template.options?.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         );
+      case 'slider': {
+        const numericOptions = template.options
+          ?.map((o) => Number(o.value))
+          .filter((n) => !Number.isNaN(n));
+        const min = numericOptions?.length ? Math.min(...numericOptions) : 0;
+        const max = numericOptions?.length ? Math.max(...numericOptions) : 100;
+        const sliderValue =
+          typeof value === 'number' ? value : min;
+        return (
+          <div className="px-2">
+            <Slider
+              min={min}
+              max={max}
+              value={[sliderValue]}
+              onValueChange={(v) => handleChange(template.field_name, v[0])}
+            />
+          </div>
+        );
+      }
       case 'multiselect':
         return (
           <div className="space-y-1">
