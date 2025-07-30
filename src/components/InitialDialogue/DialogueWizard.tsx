@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useAppContext } from '@/contexts/AppContext';
 
 interface Template {
   id: number;
@@ -13,27 +14,36 @@ interface Template {
 }
 
 const DialogueWizard: React.FC = () => {
+  const { preferredLanguage } = useAppContext();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [current, setCurrent] = useState(0);
   const [summary, setSummary] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTemplates = async () => {
+      setLoading(true);
+      setError(null);
       const { data, error } = await supabase
         .from('initial_dialogue_templates')
         .select('*')
-        .eq('active', true)
+        .eq('is_active', true)
+        .eq('language', preferredLanguage || 'en')
         .order('order');
-      if (!error) {
-        setTemplates(data || []);
-      } else {
+      if (error) {
         console.error('Failed to load templates', error);
+        setError('Failed to load templates');
+        setTemplates([]);
+      } else {
+        setTemplates(data || []);
       }
+      setLoading(false);
     };
     loadTemplates();
-  }, []);
+  }, [preferredLanguage]);
 
   const handleChange = (name: string, value: any) => {
     setAnswers(prev => ({ ...prev, [name]: value }));
@@ -77,8 +87,16 @@ const DialogueWizard: React.FC = () => {
     );
   }
 
-  if (!templates.length) {
+  if (error) {
+    return <div className="p-4 text-destructive">{error}</div>;
+  }
+
+  if (loading) {
     return <div className="p-4">Loading...</div>;
+  }
+
+  if (!templates.length) {
+    return <div className="p-4 text-yellow-600">No dialogue templates found.</div>;
   }
 
   const template = templates[current];
@@ -87,6 +105,7 @@ const DialogueWizard: React.FC = () => {
   const renderField = () => {
     switch (template.field_type) {
       case 'textarea':
+      case 'paragraph':
         return (
           <textarea
             className="w-full border rounded p-2"
@@ -141,6 +160,18 @@ const DialogueWizard: React.FC = () => {
             <span>Yes</span>
           </label>
         );
+      case 'text[]':
+      case 'tag[]':
+        return (
+          <input
+            className="w-full border rounded p-2"
+            type="text"
+            placeholder="Comma separated values"
+            value={value}
+            onChange={e => handleChange(template.field_name, e.target.value)}
+          />
+        );
+      case 'text':
       default:
         return (
           <input
