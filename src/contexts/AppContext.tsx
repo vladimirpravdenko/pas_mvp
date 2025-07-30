@@ -7,6 +7,7 @@ interface User {
   email: string;
   plan: 'free' | 'paid';
   songsToday: number;
+  isAdmin: boolean;
 }
 
 interface Song {
@@ -49,27 +50,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [songs, setSongs] = useState<Song[]>([]);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
 
+  const fetchIsAdmin = async (id: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', id)
+        .single();
+      if (error) {
+        console.error('is_admin fetch error', error);
+        return false;
+      }
+      return data?.is_admin ?? false;
+    } catch (err) {
+      console.error('is_admin fetch error', err);
+      return false;
+    }
+  };
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const loadSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setSupabaseUser(session.user);
+        const isAdmin = await fetchIsAdmin(session.user.id);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin
         });
       }
-    });
+    };
+    loadSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setSupabaseUser(session.user);
+        const isAdmin = await fetchIsAdmin(session.user.id);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
           plan: 'free',
-          songsToday: 0
+          songsToday: 0,
+          isAdmin
         });
       } else {
         setSupabaseUser(null);
@@ -87,7 +112,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        const isAdmin = await fetchIsAdmin(data.user.id);
+        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0, isAdmin });
         return true;
       }
       return false;
@@ -100,7 +126,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) return false;
       if (data.user) {
         setSupabaseUser(data.user);
-        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0 });
+        const isAdmin = await fetchIsAdmin(data.user.id);
+        setUser({ id: data.user.id, email: data.user.email || '', plan: 'free', songsToday: 0, isAdmin });
         return true;
       }
       return false;

@@ -73,23 +73,31 @@ export const Dashboard: React.FC = () => {
           <TabsList className="grid w-full grid-cols-6 mb-8">
             <TabsTrigger value="create"><Plus className="h-4 w-4" />Create</TabsTrigger>
             <TabsTrigger value="history"><History className="h-4 w-4" />History</TabsTrigger>
-            {/*<TabsTrigger value="webhook"><Webhook className="h-4 w-4" />Webhook</TabsTrigger> */}
-            {/*<TabsTrigger value="payloads"><Eye className="h-4 w-4" />Payloads</TabsTrigger> */}
-            {/*<TabsTrigger value="mappings"><MapPin className="h-4 w-4" />Mappings</TabsTrigger> */}
+            {user.isAdmin && (
+              <>
+                <TabsTrigger value="webhook"><Webhook className="h-4 w-4" />Webhook</TabsTrigger>
+                <TabsTrigger value="payloads"><Eye className="h-4 w-4" />Payloads</TabsTrigger>
+                <TabsTrigger value="mappings"><MapPin className="h-4 w-4" />Mappings</TabsTrigger>
+              </>
+            )}
             <TabsTrigger value="settings"><Settings className="h-4 w-4" />Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="create"><SongForm /></TabsContent>
           <TabsContent value="history"><SongHistory /></TabsContent>
-          <TabsContent value="webhook">
-            <div className="space-y-6">
-              <WebhookIntegrationTester />
-              <WebhookStatusChecker />
-              <WebhookTester />
-            </div>
-          </TabsContent>
-          <TabsContent value="payloads"><WebhookPayloadViewer /></TabsContent>
-          <TabsContent value="mappings"><TaskMappingViewer /></TabsContent>
+          {user.isAdmin && (
+            <>
+              <TabsContent value="webhook">
+                <div className="space-y-6">
+                  <WebhookIntegrationTester />
+                  <WebhookStatusChecker />
+                  <WebhookTester />
+                </div>
+              </TabsContent>
+              <TabsContent value="payloads"><WebhookPayloadViewer /></TabsContent>
+              <TabsContent value="mappings"><TaskMappingViewer /></TabsContent>
+            </>
+          )}
           <TabsContent value="settings"><CredentialsSettings /></TabsContent>
         </Tabs>
       </main>
