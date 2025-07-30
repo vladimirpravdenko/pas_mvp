@@ -56,6 +56,9 @@ export const Dashboard: React.FC = () => {
               </div>
               
               <div className="flex items-center gap-2 text-sm text-gray-600">
+                {user.isAdmin && (
+                  <a href="/admin/dialogues" className="underline text-indigo-600 mr-2">Admin</a>
+                )}
                 <span>{user.email}</span>
                 <Button variant="ghost" size="sm" onClick={logout}>
                   <LogOut className="h-4 w-4" />
