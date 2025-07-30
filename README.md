@@ -14,3 +14,15 @@ supabase db push
 The migration `003_update_initial_dialogue_templates.sql` adds `is_active`,
 `language`, and `order` columns to the `initial_dialogue_templates` table and
 populates existing rows with an ordering based on creation time.
+
+## Environment Variables
+
+Create a `.env` file in the project root (you can copy `.env.example`) and
+provide your Supabase credentials:
+
+```bash
+SUPABASE_URL=<your-supabase-url>
+SUPABASE_KEY=<your-supabase-key>
+```
+
+These variables are required for both local development and deployment.
