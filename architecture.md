@@ -345,3 +345,44 @@ PAS is a personalized music generation web app that:
 
 ---
 
+### Step 6.3: .env Variables Reference
+
+> These environment variables are required for secure access to Supabase, Suno API, and LLM endpoints.
+
+---
+
+#### 🌐 `.env.local` — used in Vite frontend
+
+```env
+VITE_SUPABASE_URL=https://<your-project>.supabase.co
+VITE_SUPABASE_ANON_KEY=ey... (your public anon key)
+VITE_SUNO_API_KEY=sk-... (optional if calling from frontend — not recommended)
+```
+
+⚠️ No LLM keys should go here — frontend must not expose OpenAI keys or local ports.
+
+---
+
+#### 🛠️ `.env` — for Supabase Edge Functions or backend
+
+```env
+SUPABASE_SERVICE_ROLE_KEY=...          # internal backend use only
+SUNO_API_KEY=sk-...                    # used to send song prompts
+LLM_MODE=local                         # options: 'local' | 'openai'
+LLM_ENDPOINT=http://localhost:11434   # for Ollama / Mistral
+LLM_MODEL=mistral                     # model name (e.g. 'mistral', 'phi', etc.)
+
+# OR if using OpenAI:
+# LLM_MODE=openai
+# OPENAI_API_KEY=sk-...
+# OPENAI_MODEL=gpt-4
+```
+
+---
+
+✅ Codex should branch logic in `ai_router.ts` depending on `LLM_MODE`.
+
+✅ All secrets should be excluded from GitHub via `.gitignore`.
+
+---
+
