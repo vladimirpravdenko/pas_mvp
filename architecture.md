@@ -386,3 +386,41 @@ LLM_MODEL=mistral                     # model name (e.g. 'mistral', 'phi', etc.)
 
 ---
 
+### Step 6.4: Suggested File Structure (MVP)
+
+> A modular layout optimized for Vite + React frontend and Supabase backend (with edge functions).
+
+```
+📁 pas_mvp/
+├── 📁 public/
+│   └── index.html
+├── 📁 src/
+│   ├── 📁 components/
+│   │   └── AudioPlayer.tsx
+│   ├── 📁 pages/
+│   │   ├── LoginPage.tsx
+│   │   ├── InitialDialoguePage.tsx
+│   │   ├── SongDialoguePage.tsx
+│   │   └── SongDashboard.tsx
+│   ├── 📁 lib/
+│   │   └── supabaseClient.ts          # Supabase.init()
+│   ├── App.tsx
+│   └── main.tsx
+├── 📁 supabase/
+│   └── 📁 functions/
+│       ├── suno_webhook.ts           # receives audio URLs from Suno
+│       └── ai_router.ts              # handles LLM prompting (interview + lyrics)
+├── 📁 scripts/
+│   └── seed_initial_dialogue.ts      # optional seeding script
+├── .env.local                        # Vite frontend config
+├── .env                              # Secrets for Edge Functions
+├── .gitignore
+├── package.json
+└── README.md
+```
+
+✅ This structure separates concerns cleanly:
+- `pages/` = routing views
+- `components/` = reusable UI
+- `lib/` = service logic
+- `supabase/functions/` = edge handlers for LLM and Suno
