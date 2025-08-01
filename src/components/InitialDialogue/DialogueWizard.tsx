@@ -62,7 +62,11 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
 
       const templatesData = data || [];
       const optionTemplateIds = templatesData
-        .filter((t) => t.field_type === 'select' || t.field_type === 'slider')
+        .filter(
+          (t) =>
+            (t.field_type === 'select' || t.field_type === 'slider') &&
+            t.field_name !== 'mood'
+        )
         .map((t) => t.id);
 
       const optionsMap: Record<string | number, Option[]> = {};
@@ -196,7 +200,8 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
   }
 
   const template = templates[current];
-  const fieldType = template.field_type || 'text';
+  const fieldType =
+    template.field_name === 'mood' ? 'text' : template.field_type || 'text';
   const value =
     answers[template.field_name] ??
     (fieldType === 'multiselect' ? [] : fieldType === 'slider' ? undefined : '');
