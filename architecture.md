@@ -247,3 +247,101 @@ PAS is a personalized music generation web app that:
 - Add user tagging and mood classification to songs
 - Add status polling for Suno task completion if needed
 - Visualize user history or growth across songs
+
+---
+
+## Step 6: Codex Build Support Addenda
+
+### Step 6.1: Supabase Table Schemas
+
+> These are minimal schema definitions to guide Codex in creating backend DB code and aligning with expected API responses.
+
+#### `users`
+| Field        | Type      | Notes                     |
+|--------------|-----------|---------------------------|
+| `id`         | UUID      | Primary key, from Supabase Auth |
+| `email`      | text      | Auth email                |
+| `created_at` | timestamp | Supabase default          |
+
+#### `user_initial_dialogue_responses`
+| Field        | Type      | Notes                         |
+|--------------|-----------|-------------------------------|
+| `id`         | UUID      | Primary key                   |
+| `user_id`    | UUID      | FK to users                   |
+| `responses`  | json      | Full interview answers        |
+| `created_at` | timestamp | Supabase default              |
+
+#### `song_dialogues`
+| Field        | Type      | Notes                         |
+|--------------|-----------|-------------------------------|
+| `id`         | UUID      | Primary key                   |
+| `user_id`    | UUID      | FK to users                   |
+| `input`      | json      | Dialogue text or form data    |
+| `created_at` | timestamp | Supabase default              |
+
+#### `songs`
+| Field        | Type      | Notes                         |
+|--------------|-----------|-------------------------------|
+| `id`         | UUID      | Primary key                   |
+| `user_id`    | UUID      | FK to users                   |
+| `title`      | text      | Generated title               |
+| `lyrics`     | text      | Full lyrics                   |
+| `prompt`     | text      | Suno-compatible prompt        |
+| `audio_url_1`| text      | First audio URL               |
+| `audio_url_2`| text      | Second audio URL              |
+| `status`     | text      | `pending` / `complete`        |
+| `created_at` | timestamp | Supabase default              |
+
+---
+
+### Step 6.2: Sample LLM Prompts
+
+> These prompts are used in the `ai_router.ts` edge function to generate either interview questions or full lyrics + Suno prompts.
+
+---
+
+#### 🎤 Prompt Mode A — Initial Interview Guidance
+
+**Goal:** Help PAS guide users through a deeper emotional/motivational self-reflection.
+
+```json
+{
+  "mode": "interview",
+  "persona": "empathetic songwriting assistant",
+  "context": [],
+  "instruction": "Generate the next open-ended question for a reflective initial interview that will help personalize future songs. Keep it simple, warm, and emotionally focused."
+}
+```
+
+✅ Can be repeated with updated `context` as dialogue evolves.
+
+---
+
+#### 🎼 Prompt Mode B — Song Lyrics & Music Prompt Generation
+
+**Goal:** Turn user emotional state + current request into lyrics and a Suno-compatible prompt.
+
+```json
+{
+  "mode": "song",
+  "persona": "expert songwriter + music director",
+  "user_profile": {
+    "mood_goal": "boost confidence",
+    "music_tags": ["cinematic", "female vocals", "motivational"]
+  },
+  "dialogue": "I have an important presentation tomorrow and feel a bit nervous. I want a song that energizes me and reminds me I'm ready.",
+  "instruction": "Generate powerful, original lyrics and a short Suno music prompt that fits the emotional request. Avoid copying existing songs."
+}
+```
+
+**Expected LLM output:**
+
+```json
+{
+  "lyrics": "You're standing tall, the lights are on...\nThey'll hear your fire when you speak...",
+  "prompt": "cinematic pop with strong female vocals, uplifting melody, motivational tone"
+}
+```
+
+---
+
