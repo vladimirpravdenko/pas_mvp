@@ -1,7 +1,7 @@
--- Enable RLS and allow anyone to insert responses
 ALTER TABLE user_initial_dialogue_responses ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can insert responses" 
+CREATE POLICY "Users can manage own initial responses"
   ON user_initial_dialogue_responses
-  FOR INSERT
-  WITH CHECK (true);
+  FOR ALL
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
