@@ -25,7 +25,7 @@ interface DialogueWizardProps {
   templates?: Template[];
 }
 const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTemplates }) => {
-  const { user, preferredLanguage, refreshInitialDialogueResponses } = useAppContext();
+  const { preferredLanguage, refreshInitialDialogueResponses } = useAppContext();
   const [templates, setTemplates] = useState<Template[]>(initialTemplates || []);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [current, setCurrent] = useState(0);
@@ -113,8 +113,13 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
     setSaving(true);
     setError(null);
     try {
-      if (!user) {
-        setError('User not found');
+      const {
+        data: { user: sessionUser },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (!sessionUser) {
+        console.error('Get user error:', userError);
+        setError('Failed to save: missing user session');
         return;
       }
 
@@ -136,18 +141,18 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
       }
 
       const payload = templates.map((t) => ({
-        user_id: user.id,
+        user_id: sessionUser.id,
         template_id: t.id,
         response: answers[t.field_name],
       }));
 
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('user_initial_dialogue_responses')
         .insert(payload);
 
-      if (error) {
-        console.error('Failed to save responses', error);
-        setError('Failed to save responses');
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        setError('Failed to save: Supabase insert failed');
         return;
       }
 
@@ -170,7 +175,7 @@ const DialogueWizard: React.FC<DialogueWizardProps> = ({ templates: initialTempl
       await refreshInitialDialogueResponses();
     } catch (err) {
       console.error('Failed to save responses', err);
-      setError('Failed to save responses');
+      setError('Failed to save');
     } finally {
       setSaving(false);
     }
