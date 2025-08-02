@@ -1,1 +1,3 @@
-architecture.md
+supabase/functions/ai_router/index.ts
+supabase/functions/suno_webhook.ts
+supabase/functions/suno_webhook/index.ts
