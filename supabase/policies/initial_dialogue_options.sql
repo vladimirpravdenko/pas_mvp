@@ -16,6 +16,6 @@ CREATE POLICY "Authenticated users read options"
       SELECT 1
       FROM initial_dialogue_templates t
       WHERE t.id = template_id
-        AND t.is_active
+        AND t.active
     )
   );
