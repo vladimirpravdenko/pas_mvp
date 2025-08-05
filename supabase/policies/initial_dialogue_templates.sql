@@ -10,4 +10,4 @@ CREATE POLICY "Admins can modify dialogue templates"
 CREATE POLICY "Authenticated users read active templates"
   ON initial_dialogue_templates
   FOR SELECT
-  USING (auth.uid() IS NOT NULL AND is_active);
+  USING (auth.uid() IS NOT NULL AND active);

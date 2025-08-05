@@ -12,5 +12,7 @@ supabase db push
 ```
 
 The migration `003_update_initial_dialogue_templates.sql` adds `is_active`,
-`language`, and `order` columns to the `initial_dialogue_templates` table and
-populates existing rows with an ordering based on creation time.
+`language`, and `order` columns to the legacy `initial_dialogue_templates` table.
+Migration `011_recreate_initial_dialogue_templates.sql` replaces that table with a
+prompt-focused schema (`id`, `order`, `type`, `prompt_text`, `active`,
+`created_at`, `updated_at`) and seeds several sample prompts.
