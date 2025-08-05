@@ -10,6 +10,7 @@ import SongDialoguePage from "./pages/SongDialoguePage";
 import Index from "./pages/Index";
 import SongDashboard from "./pages/SongDashboard";
 import NotFound from "./pages/NotFound";
+import InitialDialoguePage from "./pages/InitialDialoguePage";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/dialogue" element={<SongDialoguePage />} />
             <Route path="/generate" element={<Index />} />
             <Route path="/dashboard" element={<SongDashboard />} />
+            <Route path="/initial-dialogue" element={<InitialDialoguePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
