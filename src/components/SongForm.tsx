@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppContext } from '@/contexts/AppContext';
-import { Music, AlertTriangle } from 'lucide-react';
-import { ApiKeyHelper } from '@/components/ApiKeyHelper';
+import { Music } from 'lucide-react';
 import { SongFormFields } from '@/components/SongFormFields';
 import { SongFormActions } from '@/components/SongFormActions';
-import { WebhookStatus } from '@/components/WebhookStatus';
 
 export interface SongFormData {
   mood: string;
@@ -31,15 +29,12 @@ export const SongForm: React.FC = () => {
   const [generatingAudio, setGeneratingAudio] = useState(false);
   const [generatedLyrics, setGeneratedLyrics] = useState('');
   const [musicStyle, setMusicStyle] = useState('');
-  const [showApiHelp, setShowApiHelp] = useState(false);
   const [autoSave, setAutoSave] = useState(true);
   const [currentTaskId, setCurrentTaskId] = useState<string | null>(null);
   const { user } = useAppContext();
 
-  const checkSunoApiKey = (): boolean => {
-    const sunoApiKey = localStorage.getItem('sunoApiKey');
-    return !!(sunoApiKey && sunoApiKey.trim() !== '');
-  };
+  const checkSunoApiKey = () => true;
+  const setShowApiHelp = () => {};
 
   const getCharacterLimits = () => {
     const isV4_5Plus = formData.model === 'V4_5' || formData.model === 'V4_5PLUS';
@@ -86,8 +81,6 @@ export const SongForm: React.FC = () => {
     setCurrentTaskId(null);
   };
 
-  const hasSunoKey = checkSunoApiKey();
-
   return (
     <div className="space-y-6">
       <div className="flex gap-6">
@@ -101,11 +94,6 @@ export const SongForm: React.FC = () => {
               {user?.plan === 'free' && (
                 <span className="block mt-1 text-sm text-orange-600">
                   Free plan: {3 - user.songsToday} songs remaining today
-                </span>
-              )}
-              {!hasSunoKey && (
-                <span className="block mt-1 text-sm text-red-600 flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />Suno API key required for audio generation - configure in Settings
                 </span>
               )}
             </CardDescription>
@@ -142,13 +130,7 @@ export const SongForm: React.FC = () => {
             />
           </CardContent>
         </Card>
-        
-        {(generatingAudio || currentTaskId) && (
-          <WebhookStatus taskId={currentTaskId} />
-        )}
       </div>
-      
-      {showApiHelp && <ApiKeyHelper />}
     </div>
   );
 };
