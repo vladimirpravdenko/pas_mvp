@@ -1,37 +1,36 @@
 import { supabase } from '@/lib/supabaseClient';
-
-export interface DialogueResponse {
-  initial_dialogue_templates: {
-    label: string;
-  };
-  response: string;
-}
+import type { UserInitialProfile } from '@/types/userInitialProfile';
 
 /**
- * Generate a descriptive song prompt based on a user's initial dialogue responses.
- * Fetches all responses from `user_initial_dialogue_responses` for the given user
- * and assembles them into a single prompt string.
+ * Generate a descriptive song prompt based on a user's initial profile.
+ * Fetches the profile from `user_initial_dialogue_responses` for the given user
+ * and assembles it into a single prompt string.
  */
 export async function generateSongPrompt(userId: string): Promise<string> {
   const { data, error } = await supabase
     .from('user_initial_dialogue_responses')
-    .select('initial_dialogue_templates.label, response')
+    .select('responses')
     .eq('user_id', userId)
-    .order('created_at', { ascending: true });
+    .single();
 
   if (error) {
     console.error('Failed to fetch dialogue responses:', error);
     throw error;
   }
 
-  if (!data || data.length === 0) {
+  const profile = data?.responses as UserInitialProfile | undefined;
+  if (!profile) {
     return '';
   }
 
-  // Assemble the prompt using the collected responses.
-  const lines = data.map(
-    (entry) => `${entry.initial_dialogue_templates.label.trim()}: ${String(entry.response).trim()}`,
-  );
+  const lines = [
+    `Emotional keywords: ${profile.emotional_keywords.join(', ')}`,
+    `Emotional valence: ${profile.emotional_valence.join(', ')}`,
+    `Core images or concepts: ${profile.core_images_or_concepts.join(', ')}`,
+    `Preferred music styles: ${profile.preferred_music_styles.join(', ')}`,
+    `Favorite artists: ${profile.favorite_artists.join(', ')}`,
+    `Favorite songs: ${profile.favorite_songs.join(', ')}`,
+  ];
 
-  return `Use the following user preferences to craft a personalised song.\n${lines.join('\n')}`;
+  return `Use the following user profile to craft a personalised song.\n${lines.join('\n')}`;
 }
