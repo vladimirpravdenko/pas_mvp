@@ -5,11 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 
+import LoginPage from "./pages/LoginPage";
+import SongDialoguePage from "./pages/SongDialoguePage";
 import Index from "./pages/Index";
-import Preferences from "./pages/profile/preferences";
+import SongDashboard from "./pages/SongDashboard";
 import NotFound from "./pages/NotFound";
-import AdminDialogues from "./pages/admin/dialogues";
-import InitialDialoguePage from "./pages/initial-dialogue";
 
 const queryClient = new QueryClient();
 
@@ -21,10 +21,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/profile/preferences" element={<Preferences />} />
-            <Route path="/admin/dialogues" element={<AdminDialogues />} />
-            <Route path="/initial-dialogue" element={<InitialDialoguePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/dialogue" element={<SongDialoguePage />} />
+            <Route path="/generate" element={<Index />} />
+            <Route path="/dashboard" element={<SongDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
