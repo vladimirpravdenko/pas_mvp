@@ -11,7 +11,6 @@ const LoginInner: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const checkSession = async () => {
@@ -27,7 +26,6 @@ const LoginInner: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setMessage('');
 
     try {
       // Uses Supabase auth.signInWithPassword and auth.signUp for email/password auth.
@@ -39,7 +37,7 @@ const LoginInner: React.FC = () => {
           if (signUpError) {
             setError(signUpError.message);
           } else {
-            setMessage('Account created. Please check your email to confirm and then log in.');
+            setError('Your account has been created. Check your inbox to confirm your email before logging in.');
           }
         } else {
           setError(signInError?.message || 'Login failed');
@@ -71,7 +69,6 @@ const LoginInner: React.FC = () => {
           required
         />
         {error && <div className="text-red-500 text-sm">{error}</div>}
-        {message && <div className="text-green-500 text-sm">{message}</div>}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Loading...' : 'Login'}
         </Button>
