@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { buildSemanticData } from '@/lib/transformDialogue';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';

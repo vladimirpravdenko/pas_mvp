@@ -18,7 +18,7 @@ export const WebhookStatusChecker: React.FC = () => {
   const [checkResult, setCheckResult] = useState<WebhookCheckResult | null>(null);
   const [isChecking, setIsChecking] = useState(false);
 
-  const webhookUrl = 'https://abhhiplxeaawdnxnjovf.supabase.co/functions/v1/suno-webhook';
+  const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suno-webhook`;
 
   const checkWebhookStatus = async () => {
     setIsChecking(true);

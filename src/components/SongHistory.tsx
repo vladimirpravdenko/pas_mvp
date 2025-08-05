@@ -5,7 +5,7 @@ import { Music } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { audioStorage, StoredAudio } from '@/services/audioStorage';
 import { sunoApi } from '@/services/sunoApi';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { Song } from '@/types/song';
 import { SongFilterSortControls } from './SongFilterSortControls';
 import { SongHistoryContent } from './SongHistoryContent';

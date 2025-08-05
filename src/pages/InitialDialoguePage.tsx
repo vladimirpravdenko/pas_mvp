@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AppProvider, useAppContext } from '@/contexts/AppContext';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
