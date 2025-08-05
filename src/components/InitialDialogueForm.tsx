@@ -7,23 +7,38 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
 import { useAppContext } from '@/contexts/AppContext';
 
-const InitialDialogueForm: React.FC = () => {
+interface QA {
+  q: string;
+  a: string;
+}
+
+interface Props {
+  initialAnswers: QA[];
+}
+
+const InitialDialogueForm: React.FC<Props> = ({ initialAnswers }) => {
   const { user, refreshInitialDialogueResponses } = useAppContext();
-  const [goal, setGoal] = useState('');
+  const [answers, setAnswers] = useState<QA[]>(initialAnswers);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   if (!user) return null;
 
+  const handleChange = (index: number, value: string) => {
+    setAnswers(prev => prev.map((qa, i) => (i === index ? { ...qa, a: value } : qa)));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await supabase.from('user_initial_dialogue_responses').insert({
-        user_id: user.id,
-        response: goal,
-        created_at: new Date().toISOString()
-      });
+      await supabase.from('user_initial_dialogue_responses').upsert(
+        {
+          user_id: user.id,
+          responses: answers,
+        },
+        { onConflict: 'user_id' }
+      );
       await refreshInitialDialogueResponses();
       navigate('/', { replace: true });
     } catch (err) {
@@ -38,16 +53,23 @@ const InitialDialogueForm: React.FC = () => {
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>Getting Started</CardTitle>
-          <CardDescription>Let us know your goals before generating songs.</CardDescription>
+          <CardDescription>Review your answers before generating songs.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="goal">Why are you using PAS?</Label>
-              <Input id="goal" value={goal} onChange={(e) => setGoal(e.target.value)} required />
-            </div>
+            {answers.map((qa, idx) => (
+              <div key={idx} className="space-y-2">
+                <Label htmlFor={`q-${idx}`}>{qa.q}</Label>
+                <Input
+                  id={`q-${idx}`}
+                  value={qa.a}
+                  onChange={(e) => handleChange(idx, e.target.value)}
+                  required
+                />
+              </div>
+            ))}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Saving...' : 'Continue'}
+              {loading ? 'Saving...' : 'Save'}
             </Button>
           </form>
         </CardContent>
