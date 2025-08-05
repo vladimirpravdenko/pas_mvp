@@ -21,7 +21,7 @@ const LoginInner: React.FC = () => {
           .select('id')
           .eq('user_id', session.user.id)
           .limit(1);
-        navigate(data && data.length > 0 ? '/dashboard' : '/dialogue', { replace: true });
+        navigate(data && data.length > 0 ? '/dashboard' : '/initial-dialogue', { replace: true });
       }
     };
     checkSession();
@@ -45,7 +45,7 @@ const LoginInner: React.FC = () => {
       .eq('user_id', data.user.id)
       .limit(1);
 
-    navigate(dialogueData && dialogueData.length > 0 ? '/dashboard' : '/dialogue');
+    navigate(dialogueData && dialogueData.length > 0 ? '/dashboard' : '/initial-dialogue');
     setLoading(false);
   };
 
