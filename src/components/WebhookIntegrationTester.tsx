@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { downloadAndStore } from '@/services/audioStorage';
 import { CheckCircle, XCircle, Clock, Play } from 'lucide-react';
 
@@ -53,7 +53,7 @@ export const WebhookIntegrationTester: React.FC = () => {
     // Step 1: Test webhook POST
     updateResult('webhook', 'pending', 'Testing webhook POST request...');
     try {
-      const response = await fetch('https://abhhiplxeaawdnxnjovf.supabase.co/functions/v1/suno-webhook', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suno-webhook`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(testPayload)

@@ -35,7 +35,7 @@ export const WebhookTester: React.FC = () => {
   }, null, 2));
   
   // Use the correct function URL with function name
-  const [webhookUrl, setWebhookUrl] = useState('https://abhhiplxeaawdnxnjovf.supabase.co/functions/v1/suno-webhook');
+    const [webhookUrl, setWebhookUrl] = useState(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suno-webhook`);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -128,7 +128,7 @@ export const WebhookTester: React.FC = () => {
               id="webhook-url"
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
-              placeholder="https://abhhiplxeaawdnxnjovf.supabase.co/functions/v1/suno-webhook"
+                placeholder={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suno-webhook`}
             />
             <p className="text-sm text-gray-600 mt-1">Use this URL in your SunoAPI callBackUrl parameter</p>
           </div>

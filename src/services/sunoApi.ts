@@ -1,5 +1,5 @@
 import { audioStorage } from './audioStorage';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
 
 interface SunoGenerateRequest {
@@ -38,7 +38,7 @@ class SunoApiService {
 
   private getCallbackUrl(): string {
     // Production Supabase webhook endpoint
-    return 'https://abhhiplxeaawdnxnjovf.supabase.co/functions/v1/suno-webhook';
+    return `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/suno-webhook`;
   }
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {

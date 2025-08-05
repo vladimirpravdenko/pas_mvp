@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { useAppContext } from '@/contexts/AppContext';
 import { audioStorage } from '@/services/audioStorage';
 import { useToast } from '@/hooks/use-toast';
