@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { useAppContext } from '@/contexts/AppContext';
 import { useWebhookPolling } from '@/hooks/useWebhookPolling';
 import { SongForm } from './SongForm';
@@ -14,7 +12,7 @@ import { WebhookStatusChecker } from './WebhookStatusChecker';
 import { WebhookIntegrationTester } from './WebhookIntegrationTester';
 import { WebhookPayloadViewer } from './WebhookPayloadViewer';
 import { TaskMappingViewer } from './TaskMappingViewer';
-import { LogOut, Crown, Music, History, Plus, Settings, Webhook, Eye, MapPin } from 'lucide-react';
+import { LogOut, Music, History, Plus, Settings, Webhook, Eye, MapPin } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { user, logout, songs } = useAppContext();
@@ -41,14 +39,6 @@ export const Dashboard: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-3 text-sm text-gray-600">
-              <Link to="/profile/preferences" className="underline text-indigo-600">
-                Preferences
-              </Link>
-              {user.isAdmin && (
-                <Link to="/admin/dialogues" className="underline text-indigo-600">
-                  Admin
-                </Link>
-              )}
               <span>{user.email}</span>
               <Button variant="ghost" size="sm" onClick={logout}>
                 <LogOut className="h-4 w-4" />
