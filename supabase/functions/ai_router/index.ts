@@ -1,4 +1,5 @@
 // Edge function to route AI requests to either a local LLM or OpenAI.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,6 +7,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false },
+});
 
 interface RouterRequest {
   mode: "interview" | "song";
@@ -59,12 +66,42 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
+  if (body.mode === "interview") {
+    const { data, error } = await supabase
+      .from("initial_dialogue_templates")
+      .select("prompt_text")
+      .eq("active", true)
+      .order("order");
+
+    if (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const index = Array.isArray(body.context) ? body.context.length : 0;
+    if (!data || index >= data.length) {
+      return new Response(JSON.stringify({ done: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const prompt = data[index]?.prompt_text ?? "";
+
+    return new Response(JSON.stringify({ prompt }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const llmMode = Deno.env.get("LLM_MODE") ?? "local";
 
-  const prompt =
-    body.mode === "interview"
-      ? buildInterviewPrompt(body)
-      : buildSongPrompt(body);
+  const prompt = buildSongPrompt(body);
 
   try {
     const llmResponse =
@@ -72,17 +109,11 @@ export default async function handler(req: Request): Promise<Response> {
         ? await callOpenAI(prompt)
         : await callLocalLLM(prompt);
 
-    const responsePayload: RouterResponse =
-      body.mode === "interview"
-        ? {
-            output_type: "question",
-            question: llmResponse.question ?? llmResponse.text,
-          }
-        : {
-            output_type: "lyrics",
-            lyrics: llmResponse.lyrics,
-            prompt: llmResponse.prompt,
-          };
+    const responsePayload: RouterResponse = {
+      output_type: "lyrics",
+      lyrics: llmResponse.lyrics,
+      prompt: llmResponse.prompt,
+    };
 
     return new Response(JSON.stringify(responsePayload), {
       status: 200,
@@ -97,15 +128,6 @@ export default async function handler(req: Request): Promise<Response> {
       },
     );
   }
-}
-
-function buildInterviewPrompt(req: RouterRequest): string {
-  const persona = req.persona ? `You are ${req.persona}.` : "";
-  const context = req.context ? `Context: ${JSON.stringify(req.context)}.` : "";
-  const instruction = req.instruction ??
-    "Generate the next emotionally focused interview question.";
-
-  return `${persona}\n${context}\n${instruction}\nReturn JSON: {"question": "<text>"}`;
 }
 
 function buildSongPrompt(req: RouterRequest): string {
