@@ -14,6 +14,8 @@ interface FilterSortControlsProps {
   setMoodFilter: (mood: string) => void;
   styleFilter: string;
   setStyleFilter: (style: string) => void;
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
 }
 
 export const SongFilterSortControls: React.FC<FilterSortControlsProps> = ({
@@ -23,13 +25,28 @@ export const SongFilterSortControls: React.FC<FilterSortControlsProps> = ({
   moodFilter,
   setMoodFilter,
   styleFilter,
-  setStyleFilter
+  setStyleFilter,
+  searchQuery = '',
+  setSearchQuery
 }) => {
   const uniqueMoods = Array.from(new Set(songs.map(s => s.mood).filter(Boolean)));
   const uniqueStyles = Array.from(new Set(songs.map(s => s.style).filter(Boolean)));
 
   return (
     <div className="flex flex-wrap gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+      {setSearchQuery && (
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">Search:</label>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-40 px-2 py-1 border border-input rounded-md"
+            placeholder="Title"
+          />
+        </div>
+      )}
+
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium">Sort by:</label>
         <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>

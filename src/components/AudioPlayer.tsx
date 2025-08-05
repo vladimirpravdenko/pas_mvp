@@ -1,5 +1,17 @@
 import React from 'react';
 
-export default function AudioPlayer() {
-  return <div>Audio Player Placeholder</div>;
+interface AudioPlayerProps {
+  src: string;
+}
+
+/**
+ * Simple wrapper around the native audio element. Accepts an audio source URL
+ * and renders controls for playback.
+ */
+export default function AudioPlayer({ src }: AudioPlayerProps) {
+  return (
+    <audio controls className="w-full" src={src}>
+      Your browser does not support the audio element.
+    </audio>
+  );
 }
