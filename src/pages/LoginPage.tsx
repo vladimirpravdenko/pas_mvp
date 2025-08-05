@@ -11,6 +11,7 @@ const LoginInner: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const checkSession = async () => {
@@ -31,22 +32,36 @@ const LoginInner: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setMessage('');
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInError || !data.user) {
-      setError(signInError?.message || 'Login failed');
+    try {
+      // Uses Supabase auth.signInWithPassword and auth.signUp for email/password auth.
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (signInError || !data.user) {
+        if (signInError?.message === 'Invalid login credentials') {
+          const { error: signUpError } = await supabase.auth.signUp({ email, password });
+          if (signUpError) {
+            setError(signUpError.message);
+          } else {
+            setMessage('Account created. Please check your email to confirm and then log in.');
+          }
+        } else {
+          setError(signInError?.message || 'Login failed');
+        }
+        return;
+      }
+
+      const { data: dialogueData } = await supabase
+        .from('user_initial_dialogue_responses')
+        .select('id')
+        .eq('user_id', data.user.id)
+        .limit(1);
+
+      navigate(dialogueData && dialogueData.length > 0 ? '/dashboard' : '/initial-dialogue');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { data: dialogueData } = await supabase
-      .from('user_initial_dialogue_responses')
-      .select('id')
-      .eq('user_id', data.user.id)
-      .limit(1);
-
-    navigate(dialogueData && dialogueData.length > 0 ? '/dashboard' : '/initial-dialogue');
-    setLoading(false);
   };
 
   return (
@@ -67,6 +82,7 @@ const LoginInner: React.FC = () => {
           required
         />
         {error && <div className="text-red-500 text-sm">{error}</div>}
+        {message && <div className="text-green-500 text-sm">{message}</div>}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Loading...' : 'Login'}
         </Button>
